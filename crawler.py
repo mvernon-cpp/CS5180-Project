@@ -33,10 +33,12 @@ class Frontier:
 
 
 def main():
-    print('Connecting to MongoDB Atlas...')
 
-    # Connecting to MongoDB Atlas
-    db = connectDataBase()
+    # Connect to MongoDB Atlas
+    db = connect_to_atlas()
+
+    # Connect to MongoDB Compass
+    # db = connect_to_compass()
 
     pages = db["pages"]
     pages.drop()
@@ -47,10 +49,12 @@ def main():
     crawlerThread(frontier, pages, num_target)
 
 
-def connectDataBase():
+def connect_to_atlas():
     """
     Connects to MongoDB Atlas using the correct connection string.
     """
+    print('Connecting to MongoDB Atlas...')
+
     # MongoDB Atlas connection string
     connection_string = (
         "mongodb+srv://rash30star:workworkwork@myfirstcluster.ntntd.mongodb.net/CPPCivilEngineering?retryWrites=true&w=majority"
@@ -66,6 +70,24 @@ def connectDataBase():
     except Exception as e:
         print("Error connecting to MongoDB Atlas:", e)
         return None
+
+def connect_to_compass():
+    """
+    Connects to MongoDB Compass
+    """
+    print('Connecting to MongoDB Compass...')
+
+    DB_NAME = "CPPCivilEngineering"
+    DB_HOST = "localhost"
+    DB_PORT = 27017
+
+    try:
+        client = MongoClient(host=DB_HOST, port=DB_PORT)
+        db = client[DB_NAME]
+
+        return db
+    except:
+        print("Database not connected successfully")
 
 
 def retrieveHTML(url):

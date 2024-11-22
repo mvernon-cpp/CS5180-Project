@@ -4,16 +4,18 @@ from pymongo import MongoClient
 
 
 def main():
-    print('Connecting to MongoDB Atlas...')
 
-    # Connecting to MongoDB Atlas
-    db = connectDataBase()
+    # Connect to MongoDB Atlas
+    db = connect_to_atlas()
+
+    # Connect to MongoDB Compass
+    # db = connect_to_compass()
 
     db["faculty_websites"].drop()
 
     pages = db["pages"]
 
-    print('Connecting to MongoDB Atlas collection: faculty_websites')
+    print('Connecting to collection: faculty_websites')
     faculty_websites = db["faculty_websites"]
 
     target_pages = findTargetPage(pages)
@@ -27,11 +29,31 @@ def main():
         else:
             print('Target page does not exist.')
 
+def connect_to_compass():
+    """
+    Connects to MongoDB Compass
+    """
+    print('Connecting to MongoDB Compass...')
 
-def connectDataBase():
+    DB_NAME = "CPPCivilEngineering"
+    DB_HOST = "localhost"
+    DB_PORT = 27017
+
+    try:
+        client = MongoClient(host=DB_HOST, port=DB_PORT)
+        db = client[DB_NAME]
+
+        return db
+    except:
+        print("Database not connected successfully")
+
+
+def connect_to_atlas():
     """
     Connects to MongoDB Atlas using the correct connection string.
     """
+    print('Connecting to MongoDB Atlas...')
+
     # MongoDB Atlas connection string
     connection_string = (
         "mongodb+srv://rash30star:workworkwork@myfirstcluster.ntntd.mongodb.net/CPPCivilEngineering?retryWrites=true&w=majority"
