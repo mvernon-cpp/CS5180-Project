@@ -4,10 +4,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
 
-def connect_to_db():
+def connect_to_atlas():
     """
     Connect to MongoDB Atlas.
     """
+    print('Connecting to MongoDB Atlas...')
+
     connection_string = "mongodb+srv://rash30star:workworkwork@myfirstcluster.ntntd.mongodb.net/CPPCivilEngineering?retryWrites=true&w=majority"
     DB_NAME = "CPPCivilEngineering"
     try:
@@ -18,6 +20,24 @@ def connect_to_db():
     except Exception as e:
         print("Error connecting to MongoDB Atlas:", e)
         return None
+
+def connect_to_compass():
+    """
+    Connect to MongoDB Compass.
+    """
+    print('Connecting to MongoDB Compass...')
+
+    DB_NAME = "CPPCivilEngineering"
+    DB_HOST = "localhost"
+    DB_PORT = 27017
+
+    try:
+        client = MongoClient(host=DB_HOST, port=DB_PORT)
+        db = client[DB_NAME]
+
+        return db
+    except:
+        print("Database not connected successfully")
 
 
 def preprocess_html(html):
@@ -41,7 +61,8 @@ def index_documents(db):
     documents = []
     urls = []
     for page in pages:
-        text = preprocess_html(page["fac_main"])
+        html = page["fac_main"] + page["fac_right"]
+        text = preprocess_html(html)
         documents.append(text)
         urls.append(page["url"])
     return documents, urls
@@ -71,16 +92,21 @@ def display_results(results):
     Display the search results.
     """
     for i, (url, snippet, score) in enumerate(results):
-        print(f"Result {i + 1}:")
-        print(f"URL: {url}")
-        print(f"Score: {score:.2f}")
-        print(f"Snippet: {snippet[:200]}...")  
-        print("=" * 80)
+        if score > 0:
+            print(f"Result {i + 1}:")
+            print(f"URL: {url}")
+            print(f"Score: {score:.2f}")
+            print(f"Snippet: {snippet[:200]}...")  
+            print("=" * 80)
 
 
 def main():
-    # Connect to MongoDB
-    db = connect_to_db()
+    # Connect to MongoDB Atlas
+    db = connect_to_atlas()
+
+    # Connect to MongoDB Compass
+    # db = connect_to_compass()
+
 
     documents, urls = index_documents(db)
 
