@@ -1,214 +1,122 @@
-import re
-from urllib.error import HTTPError
-import urllib.parse
-from urllib.request import urlopen
+import math
+import requests
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+from text_processing import build_inverted_index, build_tfidf_matrix, search_query
 
-class Frontier:
-	def __init__(self, startingUrl):
-		self.urls = []
-		self.urls.append(startingUrl)
-		self.current_index = 0
-		self.end = len(self.urls)
+# MongoDB connection
+def connect_database():
+    DB_NAME = "CPPCivilEngineering"
+    DB_HOST = "localhost"
+    DB_PORT = 27017
 
-	def done(self):
-		if self.current_index == self.end:
-			return True
-		else:
-			return False
+    try:
+        client = MongoClient(host=DB_HOST, port=DB_PORT)
+        db = client[DB_NAME]
+        return db
+    except Exception as e:
+        print(f"Database connection failed: {e}")
+        return None
 
-	def nextURL(self):
-		current_url = self.urls[self.current_index]
-		self.current_index += 1
-		return current_url
+# Retrieve HTML content
+def retrieve_html(url):
+    try:
+        response = requests.get(url, verify=True, timeout=10)  # Added timeout
+        response.raise_for_status()  # Raise exception for 4xx/5xx errors
+        return response.text
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP Error: {e}")
+    except requests.exceptions.SSLError as e:
+        print(f"SSL Error: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request Error: {e}")
+    return ''  # Return empty string for failed requests
 
-	def clear(self):
-		print('clearing frontier')
-		self.current_index = 0
-		self.end = 0
-		self.urls.clear()
+# Crawl pages and process data
+def crawl_pages(seed_url, pages_collection, faculty_collection, num_targets):
+    visited_urls = set()
+    frontier = [seed_url]
+    targets_found = 0
 
-	def addURL(self, url):
-		#check url does not exist in list
-		if url not in self.urls:
-			self.urls.append(url)
-			self.end += 1
+    while frontier and targets_found < num_targets:
+        url = frontier.pop(0)
+        if url in visited_urls:
+            continue
 
+        html = retrieve_html(url)
+        if not html:
+            continue
 
+        is_target = bool(BeautifulSoup(html, 'html.parser').find(attrs={'class': 'fac-info'}))
+        pages_collection.insert_one({"url": url, "html": html, "targetPage": 1 if is_target else 0})
+
+        if is_target:
+            soup = BeautifulSoup(html, 'html.parser')
+            fac_main = soup.select_one('div.fac.main').get_text(strip=True) if soup.select_one('div.fac.main') else ''
+            fac_right = soup.select_one('aside.fac.rightcol').get_text(strip=True) if soup.select_one('aside.fac.rightcol') else ''
+            faculty_collection.insert_one({"url": url, "fac_main": fac_main, "fac_right": fac_right})
+            targets_found += 1
+
+        visited_urls.add(url)
+
+        soup = BeautifulSoup(html, 'html.parser')
+        for link in soup.find_all('a', href=True):
+            abs_url = urljoin(seed_url, link['href'])
+            if abs_url.startswith('mailto:') or not abs_url.startswith(('http://', 'https://')):
+                continue
+            if abs_url not in visited_urls:
+                frontier.append(abs_url)
+
+    print(f"Crawling completed. Found {targets_found} target pages.")
+
+# Main function
 def main():
-	
-	print('connecting to database collection pages')
+    db = connect_database()
+    if db is None:  # Explicitly check for None
+        print("Failed to connect to MongoDB. Exiting...")
+        return
 
-	# Connecting to the database
-	db = connectDataBase()
+    pages_collection = db["pages"]
+    faculty_collection = db["faculty_websites"]
+    pages_collection.drop()
+    faculty_collection.drop()
 
-	# Drop existing pages collection
-	pages = db["pages"]    
-	pages.drop()
-	
-	# Creating a collection
-	pages = db["pages"]    
+    seed_url = "https://www.cpp.edu/engineering/ce/index.shtml"
+    num_targets = 10
+    crawl_pages(seed_url, pages_collection, faculty_collection, num_targets)
 
-	frontier = Frontier('https://www.cpp.edu/engineering/ce/index.shtml')
-	# frontier = Frontier('https://www.cpp.edu/engineering/ce/faculty.shtml')
-	# frontier = Frontier('https://www.cpp.edu/faculty/yongpingz/')
-	
-	num_target = 25
-	crawlerThread(frontier, pages, num_target)
+    faculty_data = list(faculty_collection.find())
+    inverted_index = build_inverted_index(faculty_data)
+    print("Inverted index built successfully!")
 
+    vectorizer, tfidf_matrix = build_tfidf_matrix(faculty_data)
+    print("TF-IDF matrix built successfully! Search engine ready.")
 
+    while True:
+        query = input("Enter your search query (or 'exit' to quit): ").strip()
+        if query.lower() == "exit":
+            break
 
-def retieveHTML(url):
-	try:
-		html = urlopen( url )
-	except HTTPError as e:
-		return ''
-	try:
-		bs = BeautifulSoup(html.read(), 'html.parser')
-	except AttributeError as e:
-		return ''
-	return bs.prettify()
+        page = 1
+        while True:
+            results, total = search_query(query, vectorizer, tfidf_matrix, faculty_data, inverted_index, page=page)
+            if not results:
+                print("No results found.")
+                break
 
-def connectDataBase():
-	# Creating a database connection object using pymongo
+            print(f"\nPage {page} of {math.ceil(total / 5)}:")
+            for i, result in enumerate(results, start=1):
+                print(f"{i}. {result['url']}")
+                print(f"Snippet: {result['snippet']}...\n")
 
-	DB_NAME = "CPPCivilEngineering"
-	DB_HOST = "localhost"
-	DB_PORT = 27017
+            nav = input("Enter 'n' for next page, 'p' for previous page, or 'q' to quit: ").strip().lower()
+            if nav == "n":
+                page += 1
+            elif nav == "p" and page > 1:
+                page -= 1
+            elif nav == "q":
+                break
 
-	try:
-		client = MongoClient(host=DB_HOST, port=DB_PORT)
-		db = client[DB_NAME]
-
-		return db
-	except:
-		print("Database not connected successfully")
-
-
-def storePage(pages, url, html):
-	page = {
-		  "url": url,
-		  "html": html,
-		  "targetPage": 0
-	 }
-	
-	pages.insert_one(page)
-
-
-def targetPage(html):
-	# Stop criteria 
-	# <div class="fac-info">
-
-	bs = BeautifulSoup(html, 'html.parser')
-
-	fac_info = True if bs.find(attrs={'class':'fac-info'}) else False
-	
-	# if fac_info:
-	# 	print( bs.find(attrs={'class':'fac-info'}).get_text().strip() )
-	return fac_info
-		
-def flagTargetPage(pages, url):
-	page = { "$set": {
-		  "targetPage": 1
-	 }}
-	
-	pages.update_one({"url": url}, page)
-
-def findURLS(html):
-	ce_base = 'https://www.cpp.edu/engineering/ce/'
-	cpp_base = 'http://www.cpp.edu'
-	cpp_base_secure = 'https://www.cpp.edu'
-
-	urls = []
-	sanitized_found_urls = []
-	bs = BeautifulSoup(html, 'html.parser')
-	contains_hrefs = bs.find_all(href=True)
-
-	file_types = ['.pdf', '.docx', '.doc', '.ppt','.pptx', '.png', '.jpg', '.jpeg', '.ai', '.xlsx']
-	
-	for hrefs in contains_hrefs:
-		href = hrefs['href'].replace(" ", "")
-
-		# print('href:', href)
-
-		if any(ele in href for ele in file_types):
-			continue
-			# print('skip, file extension', href)
-		elif 'mailto' in href:
-			continue
-			# print('skip, mailto', href)
-		elif cpp_base_secure in href or cpp_base in href:
-			# print('vaild', href)
-			urls.append( href )
-		elif 'http' in href and cpp_base_secure not in href:
-			continue
-			# print('skip, http not cpp', href)
-		elif cpp_base_secure not in href:
-			# print('urljoin', href)
-			urls.append( urllib.parse.urljoin(ce_base, href) )
-		else:
-			continue
-			# print('skipping non cpp websites', href)
-		
-		sanitized_found_urls = [url for url in urls if re.search(cpp_base_secure,url)]
-		
-	return sanitized_found_urls
-
-
-
-def crawlerThread(frontier, pages, num_targets):
-	print('Starting crawler thread')
-
-	targets_found = 0
-	while not frontier.done():
-
-		url = frontier.nextURL()
-		print('current url:', url)
-
-		html = retieveHTML(url)
-
-		storePage(pages, url, html)
-
-		if targetPage(html):
-			print('target met, add flag')
-			flagTargetPage(pages, url)
-			targets_found = targets_found + 1
-		if targets_found == num_targets:
-			frontier.clear()
-		else:
-			print('targets_found', targets_found)
-
-			found_urls = findURLS(html)
-			
-			for url in found_urls:
-				frontier.addURL(url)
-	
-	print('==========\nFinished crawler thread. Check mongoDB.\n==========')
-
-
-
-	'''
-	PSUEDOCODE (strictly follow):
-
-	procedure crawlerThread (frontier, num_targets) 
-		targets_found = 0 
-		while not frontier.done() do 
-			url <— frontier.nextURL() 
-			html <— retrieveURL(url) 
-			storePage(url, html) 
-			if target_page (parse (html))  
-				targets_found = targets_found + 1 
-			if targets_found = num_targets 
-				clear_frontier() 
-			else 
-				for each not visited url in parse (html) do 
-					frontier.addURL(url) 
-				end for 
-			end if-else
-		end while 
-	end procedure
-	'''
-
-if __name__ == '__main__':
-	main()
+if __name__ == "__main__":
+    main()

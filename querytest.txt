@@ -1,0 +1,105 @@
+Enter your search query (or 'exit' to quit): civil engineering
+
+Page 1 of 2:
+1. https://www.cpp.edu/faculty/hybabikian/
+Snippet: Education and Professional RegistrationM.S. Civil Engineering, California Institute of TechnologyB.S. Civil Engineering, California State Polytechnic University, PomonaLicensed California Civil Engine...
+
+2. https://www.cpp.edu/faculty/ylwang/
+Snippet: Education and Professional RegistrationPh.D, Structural and Earthquake Engineering, University of California, IrvineM.S. Geotechnical Engineering, China Academy of Railway Sciences, Beijing, ChinaB.S....
+
+3. https://www.cpp.edu/faculty/jinsungcho/
+Snippet: Education and Professional RegistrationPh.D.Construction Management, Ira A. Fulton Schools of Engineering, Arizona State University, Tempe, AZM.S.Civil and Environmental Engineering, College of Engine...
+
+4. https://www.cpp.edu/faculty/ysalem/
+Snippet: Education and Professional RegistrationPh.D.in Civil Engineering- University of California, Irvine, Irvine, California, 2006.M.S.in Civil Engineering- San Jose State University, San Jose, California, ...
+
+5. https://www.cpp.edu/faculty/lvabellera/
+Snippet: EducationPhD, Civil Engineering, UCLA, 2005MS, Civil Engineering, UCLA, 2001MS, Remote Sensing, University of the Philippines, Diliman, 1997BS, Geodetic Engineering, University of the Philippines, Dil...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: n
+
+Page 2 of 2:
+1. https://www.cpp.edu/faculty/siddharthb/
+Snippet: About MeConstruction data enthusiast with a minor in Statistics; aiming to use data analytics to generate insights and improve construction workflow processes. Proficient in R, Python, Tableau, SQL, a...
+
+2. https://www.cpp.edu/faculty/gmgad/
+Snippet: Teaching & Research InterestsTEACHINGMy teaching philosophy embraces active learning as key in improving the student learning experience. I have taught a variety of courses at both undergraduate and g...
+
+3. https://www.cpp.edu/faculty/wcheng/
+Snippet: Education and Professional RegistrationDegreesB.S.in Civil Engineering, Tongji University, 2000M.S.in Roadway & Traffic Engineering, Tongji University, 2002M.S.in Civil Engineering, University of Ariz...
+
+4. https://www.cpp.edu/faculty/dandrei/
+Snippet: EducationPh.D., Arizona State UniversityM.S., University of MarylandEngineer Diploma, Technical University of Iasi, RomaniaLicenses and CertificationsRegistered Civil Engineer, CaliforniaProfessional ...
+
+5. https://www.cpp.edu/faculty/mgershfeld/
+Snippet: EDUCATION AND PROFESSIONAL REGISTRATIONMS  Engineering - Cal Poly PomonaBS Civil Engineering - Cal Poly PomonaPE - Registered Civil EngineerSE - Sructural EngineerTEACHINGIntroduction to Structural De...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: q
+Enter your search query (or 'exit' to quit): transportation systems
+
+Page 1 of 1:
+1. https://www.cpp.edu/faculty/wcheng/
+Snippet: Education and Professional RegistrationDegreesB.S.in Civil Engineering, Tongji University, 2000M.S.in Roadway & Traffic Engineering, Tongji University, 2002M.S.in Civil Engineering, University of Ariz...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: q
+Enter your search query (or 'exit' to quit): structural analysis
+No results found.
+Enter your search query (or 'exit' to quit): sustainable infrastructure
+No results found.
+Enter your search query (or 'exit' to quit): earthquake engineering
+No results found.
+Enter your search query (or 'exit' to quit): environmental water systems
+
+Page 1 of 1:
+1. https://www.cpp.edu/faculty/lvabellera/
+Snippet: EducationPhD, Civil Engineering, UCLA, 2005MS, Civil Engineering, UCLA, 2001MS, Remote Sensing, University of the Philippines, Diliman, 1997BS, Geodetic Engineering, University of the Philippines, Dil...
+
+2. https://www.cpp.edu/faculty/jinsungcho/
+Snippet: Education and Professional RegistrationPh.D.Construction Management, Ira A. Fulton Schools of Engineering, Arizona State University, Tempe, AZM.S.Civil and Environmental Engineering, College of Engine...
+
+3. https://www.cpp.edu/faculty/wcheng/
+Snippet: Education and Professional RegistrationDegreesB.S.in Civil Engineering, Tongji University, 2000M.S.in Roadway & Traffic Engineering, Tongji University, 2002M.S.in Civil Engineering, University of Ariz...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: q
+Enter your search query (or 'exit' to quit): application of AI in construction management
+No results found.
+Enter your search query (or 'exit' to quit): nonlinear finite element modeling of bridges
+
+Page 1 of 1:
+1. https://www.cpp.edu/faculty/jinsungcho/
+Snippet: Education and Professional RegistrationPh.D.Construction Management, Ira A. Fulton Schools of Engineering, Arizona State University, Tempe, AZM.S.Civil and Environmental Engineering, College of Engine...
+
+2. https://www.cpp.edu/faculty/ysalem/
+Snippet: Education and Professional RegistrationPh.D.in Civil Engineering- University of California, Irvine, Irvine, California, 2006.M.S.in Civil Engineering- San Jose State University, San Jose, California, ...
+
+3. https://www.cpp.edu/faculty/dandrei/
+Snippet: EducationPh.D., Arizona State UniversityM.S., University of MarylandEngineer Diploma, Technical University of Iasi, RomaniaLicenses and CertificationsRegistered Civil Engineer, CaliforniaProfessional ...
+
+4. https://www.cpp.edu/faculty/mgershfeld/
+Snippet: EDUCATION AND PROFESSIONAL REGISTRATIONMS  Engineering - Cal Poly PomonaBS Civil Engineering - Cal Poly PomonaPE - Registered Civil EngineerSE - Sructural EngineerTEACHINGIntroduction to Structural De...
+
+5. https://www.cpp.edu/faculty/wcheng/
+Snippet: Education and Professional RegistrationDegreesB.S.in Civil Engineering, Tongji University, 2000M.S.in Roadway & Traffic Engineering, Tongji University, 2002M.S.in Civil Engineering, University of Ariz...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: q
+Enter your search query (or 'exit' to quit): geotechnical hazard analysis under seismic loads
+
+Page 1 of 1:
+1. https://www.cpp.edu/faculty/ylwang/
+Snippet: Education and Professional RegistrationPh.D, Structural and Earthquake Engineering, University of California, IrvineM.S. Geotechnical Engineering, China Academy of Railway Sciences, Beijing, ChinaB.S....
+
+2. https://www.cpp.edu/faculty/ysalem/
+Snippet: Education and Professional RegistrationPh.D.in Civil Engineering- University of California, Irvine, Irvine, California, 2006.M.S.in Civil Engineering- San Jose State University, San Jose, California, ...
+
+3. https://www.cpp.edu/faculty/mgershfeld/
+Snippet: EDUCATION AND PROFESSIONAL REGISTRATIONMS  Engineering - Cal Poly PomonaBS Civil Engineering - Cal Poly PomonaPE - Registered Civil EngineerSE - Sructural EngineerTEACHINGIntroduction to Structural De...
+
+4. https://www.cpp.edu/faculty/jinsungcho/
+Snippet: Education and Professional RegistrationPh.D.Construction Management, Ira A. Fulton Schools of Engineering, Arizona State University, Tempe, AZM.S.Civil and Environmental Engineering, College of Engine...
+
+Enter 'n' for next page, 'p' for previous page, or 'q' to quit: q
+Enter your search query (or 'exit' to quit): autonomous vehicle systems for smart cities
+No results found.
+Enter your search query (or 'exit' to quit): exit
+
+Process finished with exit code 0
