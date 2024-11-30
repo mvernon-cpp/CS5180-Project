@@ -11,5 +11,7 @@ def run_script(script_name):
 
 if __name__ == "__main__":
     # Run the scripts in sequence
-    run_script("parser.py")
+    print("CS5180 - Civil Engineering Search Engine")
     run_script("crawler.py")
+    run_script("faculty_parser.py")    
+    run_script("faculty_search.py")

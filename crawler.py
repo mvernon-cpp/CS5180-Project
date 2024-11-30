@@ -1,12 +1,81 @@
-import math
-import requests
-from urllib.parse import urljoin
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
-from text_processing import build_inverted_index, build_tfidf_matrix, search_query
+import urllib.parse
 
-# MongoDB connection
-def connect_database():
+
+
+class Frontier:
+    def __init__(self, startingUrl):
+        self.urls = []
+        self.urls.append(startingUrl)
+        self.current_index = 0
+        self.end = len(self.urls)
+
+    def done(self):
+        return self.current_index == self.end
+
+    def nextURL(self):
+        current_url = self.urls[self.current_index]
+        self.current_index += 1
+        return current_url
+
+    def clear(self):
+        self.current_index = 0
+        self.end = 0
+        self.urls.clear()
+
+    def addURL(self, url):
+        if url not in self.urls:
+            self.urls.append(url)
+            self.end += 1
+
+
+def main():
+
+    # Connect to MongoDB Atlas
+    # db = connect_to_atlas()
+
+    # Connect to MongoDB Compass
+    db = connect_to_compass()
+
+    pages = db["pages"]
+    pages.drop()
+
+    frontier = Frontier("https://www.cpp.edu/engineering/ce/index.shtml")
+    num_target = 25
+
+    crawlerThread(frontier, pages, num_target)
+
+
+def connect_to_atlas():
+    """
+    Connects to MongoDB Atlas using the correct connection string.
+    """
+    print('Connecting to MongoDB Atlas...')
+
+    # MongoDB Atlas connection string
+    connection_string = (
+        "mongodb+srv://rash30star:workworkwork@myfirstcluster.ntntd.mongodb.net/CPPCivilEngineering?retryWrites=true&w=majority"
+    )
+
+    DB_NAME = "CPPCivilEngineering"
+
+    try:
+        client = MongoClient(connection_string)
+        db = client[DB_NAME]
+        print("Connected to MongoDB Atlas successfully")
+        return db
+    except Exception as e:
+        print("Error connecting to MongoDB Atlas:", e)
+        return None
+
+def connect_to_compass():
+    """
+    Connects to MongoDB Compass
+    """
+    print('Connecting to MongoDB Compass...')
+
     DB_NAME = "CPPCivilEngineering"
     DB_HOST = "localhost"
     DB_PORT = 27017
@@ -14,109 +83,116 @@ def connect_database():
     try:
         client = MongoClient(host=DB_HOST, port=DB_PORT)
         db = client[DB_NAME]
+
         return db
-    except Exception as e:
-        print(f"Database connection failed: {e}")
-        return None
+    except:
+        print("Database not connected successfully")
 
-# Retrieve HTML content
-def retrieve_html(url):
+
+def retrieveHTML(url):
+    """
+    Retrieves the HTML content of a given URL.
+    """
     try:
-        response = requests.get(url, verify=True, timeout=10)  # Added timeout
-        response.raise_for_status()  # Raise exception for 4xx/5xx errors
-        return response.text
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP Error: {e}")
-    except requests.exceptions.SSLError as e:
-        print(f"SSL Error: {e}")
-    except requests.exceptions.RequestException as e:
-        print(f"Request Error: {e}")
-    return ''  # Return empty string for failed requests
+        html = urlopen(url)
+    except Exception as e:
+        print(f"Error retrieving URL {url}: {e}")
+        return ""
+    try:
+        bs = BeautifulSoup(html.read(), "html.parser")
+    except Exception as e:
+        print(f"Error parsing HTML from URL {url}: {e}")
+        return ""
+    return bs.prettify()
 
-# Crawl pages and process data
-def crawl_pages(seed_url, pages_collection, faculty_collection, num_targets):
-    visited_urls = set()
-    frontier = [seed_url]
+
+def storePage(pages, url, html):
+    """
+    Stores the page HTML and metadata into the MongoDB Atlas collection.
+    """
+    page = {
+        "url": url,
+        "html": html,
+        "targetPage": 0,
+    }
+    pages.insert_one(page)
+
+
+def targetPage(html):
+    """
+    Determines if the HTML page is a target page by checking for specific elements.
+    """
+    bs = BeautifulSoup(html, "html.parser")
+    return bool(bs.find(attrs={"class": "fac-info"}))
+
+
+def flagTargetPage(pages, url):
+    """
+    Updates the MongoDB collection to mark a page as a target page.
+    """
+    pages.update_one({"url": url}, {"$set": {"targetPage": 1}})
+
+
+def findURLs(html):
+    """
+    Finds all valid URLs in the given HTML.
+    """
+    ce_base = "https://www.cpp.edu/engineering/ce/"
+    cpp_base = "http://www.cpp.edu"
+    cpp_base_secure = "https://www.cpp.edu"
+
+    urls = []
+    bs = BeautifulSoup(html, "html.parser")
+    contains_hrefs = bs.find_all(href=True)
+
+    file_types = [".pdf", ".docx", ".doc", ".ppt", ".pptx", ".png", ".jpg", ".jpeg", ".ai", ".xlsx"]
+
+    for hrefs in contains_hrefs:
+        href = hrefs["href"].replace(" ", "")
+
+        if any(ele in href for ele in file_types):
+            continue
+        elif "mailto" in href:
+            continue
+        elif cpp_base_secure in href or cpp_base in href:
+            urls.append(href)
+        elif "http" in href and cpp_base_secure not in href:
+            continue
+        elif cpp_base_secure not in href:
+            urls.append(urllib.parse.urljoin(ce_base, href))
+        else:
+            continue
+
+    sanitized_found_urls = [url for url in urls if cpp_base_secure in url]
+
+    return sanitized_found_urls
+
+
+def crawlerThread(frontier, pages, num_targets):
+    """
+    Implements the crawler logic strictly following the provided pseudocode.
+    """
     targets_found = 0
+    while not frontier.done():
+        url = frontier.nextURL()
+        print("Current URL:", url)
 
-    while frontier and targets_found < num_targets:
-        url = frontier.pop(0)
-        if url in visited_urls:
-            continue
+        html = retrieveHTML(url)
+        storePage(pages, url, html)
 
-        html = retrieve_html(url)
-        if not html:
-            continue
-
-        is_target = bool(BeautifulSoup(html, 'html.parser').find(attrs={'class': 'fac-info'}))
-        pages_collection.insert_one({"url": url, "html": html, "targetPage": 1 if is_target else 0})
-
-        if is_target:
-            soup = BeautifulSoup(html, 'html.parser')
-            fac_main = soup.select_one('div.fac.main').get_text(strip=True) if soup.select_one('div.fac.main') else ''
-            fac_right = soup.select_one('aside.fac.rightcol').get_text(strip=True) if soup.select_one('aside.fac.rightcol') else ''
-            faculty_collection.insert_one({"url": url, "fac_main": fac_main, "fac_right": fac_right})
+        if targetPage(html):
+            flagTargetPage(pages, url)
             targets_found += 1
 
-        visited_urls.add(url)
+        if targets_found == num_targets:
+            frontier.clear()
+        else:
+            found_urls = findURLs(html)
+            for found_url in found_urls:
+                frontier.addURL(found_url)
 
-        soup = BeautifulSoup(html, 'html.parser')
-        for link in soup.find_all('a', href=True):
-            abs_url = urljoin(seed_url, link['href'])
-            if abs_url.startswith('mailto:') or not abs_url.startswith(('http://', 'https://')):
-                continue
-            if abs_url not in visited_urls:
-                frontier.append(abs_url)
+    print("==========\nFinished crawler thread. Check MongoDB.\n==========")
 
-    print(f"Crawling completed. Found {targets_found} target pages.")
-
-# Main function
-def main():
-    db = connect_database()
-    if db is None:  # Explicitly check for None
-        print("Failed to connect to MongoDB. Exiting...")
-        return
-
-    pages_collection = db["pages"]
-    faculty_collection = db["faculty_websites"]
-    pages_collection.drop()
-    faculty_collection.drop()
-
-    seed_url = "https://www.cpp.edu/engineering/ce/index.shtml"
-    num_targets = 10
-    crawl_pages(seed_url, pages_collection, faculty_collection, num_targets)
-
-    faculty_data = list(faculty_collection.find())
-    inverted_index = build_inverted_index(faculty_data)
-    print("Inverted index built successfully!")
-
-    vectorizer, tfidf_matrix = build_tfidf_matrix(faculty_data)
-    print("TF-IDF matrix built successfully! Search engine ready.")
-
-    while True:
-        query = input("Enter your search query (or 'exit' to quit): ").strip()
-        if query.lower() == "exit":
-            break
-
-        page = 1
-        while True:
-            results, total = search_query(query, vectorizer, tfidf_matrix, faculty_data, inverted_index, page=page)
-            if not results:
-                print("No results found.")
-                break
-
-            print(f"\nPage {page} of {math.ceil(total / 5)}:")
-            for i, result in enumerate(results, start=1):
-                print(f"{i}. {result['url']}")
-                print(f"Snippet: {result['snippet']}...\n")
-
-            nav = input("Enter 'n' for next page, 'p' for previous page, or 'q' to quit: ").strip().lower()
-            if nav == "n":
-                page += 1
-            elif nav == "p" and page > 1:
-                page -= 1
-            elif nav == "q":
-                break
 
 if __name__ == "__main__":
     main()
