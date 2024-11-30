@@ -21,7 +21,6 @@ class Frontier:
         return current_url
 
     def clear(self):
-        print('Clearing frontier')
         self.current_index = 0
         self.end = 0
         self.urls.clear()
@@ -35,10 +34,10 @@ class Frontier:
 def main():
 
     # Connect to MongoDB Atlas
-    db = connect_to_atlas()
+    # db = connect_to_atlas()
 
     # Connect to MongoDB Compass
-    # db = connect_to_compass()
+    db = connect_to_compass()
 
     pages = db["pages"]
     pages.drop()
@@ -182,19 +181,17 @@ def crawlerThread(frontier, pages, num_targets):
         storePage(pages, url, html)
 
         if targetPage(html):
-            print("Target met, adding flag")
             flagTargetPage(pages, url)
             targets_found += 1
 
         if targets_found == num_targets:
             frontier.clear()
         else:
-            print("Targets found:", targets_found)
             found_urls = findURLs(html)
             for found_url in found_urls:
                 frontier.addURL(found_url)
 
-    print("==========\nFinished crawler thread. Check MongoDB Atlas.\n==========")
+    print("==========\nFinished crawler thread. Check MongoDB.\n==========")
 
 
 if __name__ == "__main__":
