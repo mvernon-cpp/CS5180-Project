@@ -1,6 +1,4 @@
-from bs4 import BeautifulSoup
 import nltk
-import re
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -51,22 +49,17 @@ def build_inverted_index(faculty_data,database):
     vectorizer = TfidfVectorizer(ngram_range=(1, 3))
     tfidf_matrix = vectorizer.fit_transform(tokenized_documents)
     terms = vectorizer.get_feature_names_out()
-    # print(terms)
 
     for doc_id, term_id in zip(*tfidf_matrix.nonzero()):
             tfidf_value = tfidf_matrix[doc_id, term_id]
             if term_id not in inverted_index:
                 inverted_index[terms[term_id]] = {}
-            # inverted_index[term_id]['term'] = terms[term_id]
             inverted_index[terms[term_id]][str(doc_id)] = tfidf_value
             inverted_index[terms[term_id]]['url'] = urls[doc_id]
 
-
     #Insert inverted index into MongoDB
     for key, values in inverted_index.items():
-        # print("key", key, "\tvalues", values)
         inverted_index_collection.insert_one({"_id": key, "documents": values})
-    # print(inverted_index)
     return inverted_index
 
 def build_tfidf_matrix(faculty_data):
